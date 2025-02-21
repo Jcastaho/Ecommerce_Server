@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import storage = require('../utils/cloud_storage');
-import { Rol } from 'src/roles/rol.entity';
+
 
 
 @Injectable()
@@ -20,7 +20,7 @@ export class UsersService {
         return this.usersRepository.save(newUser)
     }
 
-    
+
     findAll() {
         return this.usersRepository.find({ relations: ['roles'] })
     }
@@ -39,28 +39,45 @@ export class UsersService {
     }
 
 
-    async updateWithImage(file: Express.Multer.File, id: number, user:UpdateUserDto ) {
+    async updateWithImage(file: Express.Multer.File, id: number, user: UpdateUserDto) {
         const userFound = await this.usersRepository.findOneBy({ id: id });
         if (!userFound) {
             throw new HttpException('Userio no existe', HttpStatus.NOT_FOUND);
-        }else{
-            const folder = 'IMAGE_USER' + userFound.name +'_'+ userFound.lastname +'_'+ userFound.phone;  // La carpeta donde se guardará la imagen
-            const fileName = file.originalname;  // El nombre original del archivo
-            const filePath = `${folder}/${fileName}`;
-            const url = await storage(file, filePath);  // Almacenamos la imagen en la ruta especificada
-            console.log('URL: ' + url)
-    
-            if(url === undefined && url === null){
-                throw new HttpException('La imagen no se pudo guardar', HttpStatus.INTERNAL_SERVER_ERROR);
-            } 
-            user.image = url;
-            const updatedUser = Object.assign(userFound, user);
-    
-            return this.usersRepository.save(updatedUser)
+        } else {
+
+            try {
+                const formattedName = userFound.name.replace(/\s+/g, '_');
+                const formattedLastname = userFound.lastname.replace(/\s+/g, '_');
+                const formattedPhone = userFound.phone.replace(/\s+/g, '_');
+                // Crear el nombre de la carpeta sin doble codificación
+                const folderName = `${formattedName}_${formattedLastname}_${formattedPhone}`;
+
+                // Usar el nombre original del archivo sin codificación adicional
+                const fileName = file.originalname;
+                const filePath = `${folderName}/${fileName}`;
+                // Almacenar la imagen
+
+                const url = await storage(file, filePath);
+
+                if (!url) {
+                    throw new HttpException('La imagen no se pudo guardar', HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+
+        
+                // Asignar la URL directamente
+                user.image = url;
+                const updatedUser = Object.assign(userFound, user);
+
+                return this.usersRepository.save(updatedUser);
+            } catch (error) {
+                console.error('Error al procesar la imagen:', error);
+                throw new HttpException(
+                    'Error al procesar la imagen',
+                    HttpStatus.INTERNAL_SERVER_ERROR
+                );
+            }
+
         }
-
-
-
     }
 
 }

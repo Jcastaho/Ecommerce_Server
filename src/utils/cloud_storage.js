@@ -24,6 +24,7 @@ module.exports = (file, pathImage) => {
             if (pathImage != null || pathImage != undefined) {
 
                 let fileUpload = bucket.file(`${pathImage}`);
+                const encodedFilePath = encodeURIComponent(fileUpload.name);
                 const blobStream = fileUpload.createWriteStream({
                     metadata: {
                         contentType: 'image/png',
@@ -42,7 +43,7 @@ module.exports = (file, pathImage) => {
 
                 blobStream.on('finish', () => {
                     // The public URL can be used to directly access the file via HTTP.
-                    const url = format(`https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${fileUpload.name}?alt=media&token=${uuid}`);
+                    const url = format(`https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedFilePath}?alt=media&token=${uuid}`);
                     console.log('URL DE CLOUD STORAGE ', url);
                     resolve(url);
                 });

@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeInsert, ManyToMany, JoinTable } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeInsert, ManyToMany, JoinTable, OneToMany } from "typeorm";
 import { hash } from "bcryptjs";
 import { Rol } from "src/roles/rol.entity";
+import { Address } from "src/address/address.entity";
 
 @Entity({ name: 'users' })
 export class User {
@@ -48,6 +49,9 @@ export class User {
     })//tabla principal de la relacion
     @ManyToMany(() => Rol, (rol) => rol.users)//relacion muchos a muchos
     roles: Rol[];
+
+    @OneToMany(() => Address, address => address.id)
+    address: Address;
 
 
     @BeforeInsert()

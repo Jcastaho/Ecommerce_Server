@@ -72,7 +72,6 @@ export class AuthService {
             relations: ['roles']//     @ManyToMany(() => Rol, (rol) => rol.users) roles: Rol[]; user.entity.ts se coloca tal cual como esta alli y es roles
 
         })
-
         if (!userFound) {
             throw new HttpException('El correo no existe', HttpStatus.NOT_FOUND)//error 404
         }
@@ -84,7 +83,6 @@ export class AuthService {
         }
 
         const rolesIds = userFound.roles.map(rol => rol.id);
-
 
         const payload = {
             id: userFound.id,
@@ -99,7 +97,6 @@ export class AuthService {
         }
 
         delete data.user.password
-
         return data
 
     }
